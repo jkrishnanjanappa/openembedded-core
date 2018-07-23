@@ -19,6 +19,7 @@ SRC_URI += "\
         file://0007-Fix-control-path-where-we-have-str-as-uninitialized-.patch \
         file://0001-libasm-may-link-with-libbz2-if-found.patch \
         file://CVE-2018-8769.patch \
+        file://0001-libelf-Sync-elf.h-from-glibc.patch \
 "
 SRC_URI_append_libc-musl = " file://0008-build-Provide-alternatives-for-glibc-assumptions-hel.patch"
 
