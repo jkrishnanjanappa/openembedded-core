@@ -9,6 +9,7 @@ SRC_URI = "http://curl.haxx.se/download/curl-${PV}.tar.bz2 \
            file://0001-replace-krb5-config-with-pkg-config.patch \
            file://CVE-2018-1000300.patch \
            file://CVE-2018-1000301.patch \
+           file://CVE-2018-0500.patch \
 "
 
 
