@@ -11,6 +11,45 @@ from oeqa.utils.commands import runCmd, bitbake, get_bb_var, create_temp_layer
 from oeqa.utils.commands import get_bb_vars, runqemu, get_test_layer
 from oeqa.core.decorator.oeid import OETestID
 
+oldmetapath = None
+
+def setUpModule():
+    import bb.utils
+
+    global templayerdir
+    templayerdir = tempfile.mkdtemp(prefix='devtoolqa')
+    newmetapath = os.path.join(templayerdir, 'meta')
+    bblayers_conf = os.path.join(os.environ['BUILDDIR'], 'conf', 'bblayers.conf')
+    edited_layers = []
+
+    def bblayers_edit_cb(layerpath, canonical_layerpath):
+        global oldmetapath
+        if not edited_layers and canonical_layerpath.endswith(('/meta', '/meta/')):
+            edited_layers.append(layerpath)
+            oldmetapath = layerpath
+            shutil.copytree(canonical_layerpath, newmetapath)
+            shutil.copytree(canonical_layerpath + "/../scripts", newmetapath + "/../scripts")
+            runCmd('git init', cwd=newmetapath)
+            runCmd('git add -A .', cwd=newmetapath)
+            runCmd('git commit -m "Initial commit"', cwd=newmetapath)
+            return newmetapath
+        else:
+            return layerpath
+    bb.utils.edit_bblayers_conf(bblayers_conf, None, None, bblayers_edit_cb)
+
+def tearDownModule():
+    if oldmetapath:
+        edited_layers = []
+        def bblayers_edit_cb(layerpath, canonical_layerpath):
+            if not edited_layers and canonical_layerpath.endswith('/meta'):
+                edited_layers.append(layerpath)
+                return oldmetapath
+            else:
+                return layerpath
+        bblayers_conf = os.path.join(os.environ['BUILDDIR'], 'conf', 'bblayers.conf')
+        bb.utils.edit_bblayers_conf(bblayers_conf, None, None, bblayers_edit_cb)
+    shutil.rmtree(templayerdir)
+
 class DevtoolBase(OESelftestTestCase):
 
     @classmethod
